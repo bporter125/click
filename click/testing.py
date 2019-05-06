@@ -197,11 +197,12 @@ class CliRunner(object):
                 sys.stderr = bytes_error
         else:
             bytes_output = io.BytesIO()
-            if self.echo_stdin:
-                input = EchoingStdin(input, bytes_output)
             input = io.TextIOWrapper(input, encoding=self.charset)
-            sys.stdout = io.TextIOWrapper(
+            output = io.TextIOWrapper(
                 bytes_output, encoding=self.charset)
+            if self.echo_stdin:
+                input = EchoingStdin(input, output)
+            sys.stdout = output
             if not self.mix_stderr:
                 bytes_error = io.BytesIO()
                 sys.stderr = io.TextIOWrapper(
@@ -215,7 +216,7 @@ class CliRunner(object):
         def visible_input(prompt=None):
             sys.stdout.write(prompt or '')
             val = input.readline().rstrip('\r\n')
-            sys.stdout.write(val + '\n')
+            sys.stdout.write('\n')
             sys.stdout.flush()
             return val
 
